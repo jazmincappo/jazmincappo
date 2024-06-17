@@ -1,0 +1,46 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public class ApiConsumer {
+    public static void main(String[] args) {
+        try {
+            String apiUrl = "URL_DE_LA_API";
+            URL url = new URL(apiUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+
+            // Verifica el código de respuesta
+            int responseCode = conn.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                throw new RuntimeException("Failed : HTTP error code : " + responseCode);
+            }
+
+            // Lee la respuesta
+            BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+            String output;
+            StringBuilder response = new StringBuilder();
+            while ((output = br.readLine()) != null) {
+                response.append(output);
+            }
+            conn.disconnect();
+            System.out.println("Response from API: " + response.toString());
+
+            // Procesa la respuesta JSON
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(response.toString());
+            System.out.println("Parsed JSON: " + jsonNode.toString());
+
+            // Aquí puedes guardar los datos en la base de datos PostgreSQL
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
